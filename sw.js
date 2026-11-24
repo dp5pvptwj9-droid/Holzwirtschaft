@@ -1,5 +1,5 @@
 /* Offline-Cache für die App-Dateien (Daten kommen immer frisch aus OneDrive). */
-const CACHE = "holzwirtschaft-iphone-1.0.0";
+const CACHE = "holzwirtschaft-iphone-1.0.1";
 const SQLJS = "https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/";
 const FILES = ["./", "./index.html", "./app.js", "./store.js", "./config.js", "./manifest.webmanifest",
   "./icon-180.png", "./icon-192.png", "./icon-512.png", SQLJS + "sql-wasm.js", SQLJS + "sql-wasm.wasm"];

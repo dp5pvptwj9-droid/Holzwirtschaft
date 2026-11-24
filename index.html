@@ -29,6 +29,9 @@
   .banner.info { background:#e8f0fb; color:#0d3c78; } .banner.warn { background:#fff3e0; color:#7a4300; }
   .banner.err { background:#fdecea; color:#8a1c1c; } .banner.ok { background:#e8f5e9; color:#1b5e20; }
   .card { background:var(--card); border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.06); overflow:hidden; }
+  .group-h { display:flex; justify-content:space-between; gap:8px; margin:14px 4px 6px; font-size:13px;
+             font-weight:700; color:var(--brown); text-transform:none; }
+  .group-h:first-child { margin-top:2px; } .group-h span:last-child { font-weight:600; color:var(--muted); }
   .item { display:flex; gap:10px; padding:12px; border-bottom:1px solid var(--line); align-items:center; }
   .item:last-child { border-bottom:0; } .item .main { flex:1; min-width:0; }
   .item .t { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -59,9 +62,21 @@
   #start { padding:24px 18px; text-align:center; } #start img { width:140px; border-radius:24px; }
   #toast { position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom) + 140px); z-index:20; display:none;
            background:#333; color:#fff; padding:12px; border-radius:12px; text-align:center; }
+  /* Startbild beim Laden */
+  #splash { position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:22px; transition:opacity .3s ease; }
+  #splash.hide { opacity:0; pointer-events:none; }
+  #splash img { width:min(46vw, 200px); height:auto; border-radius:22%; box-shadow:0 4px 16px rgba(0,0,0,.15);
+                animation:pulse 1.6s ease-in-out infinite; }
+  #splash .dots { display:flex; gap:8px; }
+  #splash .dots i { width:8px; height:8px; border-radius:4px; background:var(--brown); opacity:.25; animation:dot 1.2s infinite; }
+  #splash .dots i:nth-child(2) { animation-delay:.2s; } #splash .dots i:nth-child(3) { animation-delay:.4s; }
+  @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.04); } }
+  @keyframes dot { 0%,100% { opacity:.25; } 50% { opacity:1; } }
 </style>
 </head>
 <body>
+<div id="splash"><img src="icon-512.png" alt="Holzwirtschaft"><div class="dots"><i></i><i></i><i></i></div></div>
 <header>
   <div class="row"><h1>Holzwirtschaft</h1>
     <button class="iconbtn" id="btnReload" title="Neu laden">⟳</button>

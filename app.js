@@ -1,4 +1,4 @@
-/* Holzwirtschaft iPhone 1.0.0 – Anmeldung, OneDrive-Zugriff und Oberfläche */
+/* Holzwirtschaft iPhone 1.0.1 – Anmeldung, OneDrive-Zugriff und Oberfläche */
 (function () {
   "use strict";
   const CFG = window.HW_CONFIG || {};
@@ -265,6 +265,11 @@
 
     openSheet(html) { $("sheet").innerHTML = html; $("sheetBg").classList.add("open"); $("sheet").scrollTop = 0; },
     closeSheet() { $("sheetBg").classList.remove("open"); },
+    /** Startbild ausblenden und in die App wechseln. */
+    hideSplash() {
+      const sp = $("splash"); if (!sp || sp.dataset.done) return;
+      sp.dataset.done = "1"; sp.classList.add("hide"); setTimeout(() => sp.remove(), 350);
+    },
 
     showLogin(msg = "") {
       $("fab").style.display = "none"; $("period").innerHTML = ""; $("sync").textContent = "Nicht angemeldet";
@@ -280,9 +285,11 @@
 
     async start() {
       if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-      try { await Auth.handleRedirect(); } catch (e) { return UI.showLogin(e.message); }
-      if (!CFG.clientId || !(await Auth.access())) return UI.showLogin();
-      await UI.connect();
+      try {
+        try { await Auth.handleRedirect(); } catch (e) { return UI.showLogin(e.message); }
+        if (!CFG.clientId || !(await Auth.access())) return UI.showLogin();
+        await UI.connect();
+      } finally { UI.hideSplash(); }          // erst wechseln, wenn alles geladen ist (oder eine Meldung kommt)
     },
     async connect() {
       $("main").innerHTML = `<div class="empty">Datenbank wird aus OneDrive geladen …</div>`;
@@ -298,6 +305,7 @@
       }
     },
     askLocked(lock) {
+      UI.hideSplash();                        // Rückfrage muss sichtbar sein
       return new Promise(resolve => {
         let since = lock.since || ""; try { since = new Date(since).toLocaleString("de-DE"); } catch (_) {}
         UI.openSheet(`<h2>Datenbank wird bearbeitet</h2>
@@ -363,11 +371,25 @@
     },
     view_costs(st) {
       const n = UI.names(), rows = st.costs(UI.pid);
-      return UI.list(rows, r => `<div class="item" data-id="${r.id}"><div class="main">
-         <div class="t">${esc(r.description)}</div>
-         <div class="s">${fmtDate(r.cost_date)} · Menge ${HW.fmtNum(r.quantity)} · bezahlt von ${esc(displayName(n[r.paid_by_customer_id]))}</div></div>
-         <div class="r"><b>${fmtEur(r.price)}</b></div></div>`,
-        `<span>Summe</span><span>${fmtEur(UI.sum(rows, "price", 2))}</span>`, "Noch keine Betriebskosten.");
+      if (!rows.length) return `<div class="card"><div class="empty">Noch keine Betriebskosten.</div></div>`;
+      // Nach Kunde (bezahlt von) gruppieren, alphabetisch nach Name, Vorname; innerhalb nach Datum
+      const groups = new Map();
+      for (const r of rows) {
+        if (!groups.has(r.paid_by_customer_id)) groups.set(r.paid_by_customer_id, []);
+        groups.get(r.paid_by_customer_id).push(r);
+      }
+      const key = cid => { const c = n[cid]; return c ? `${c.last_name} ${c.first_name}`.toLowerCase() : "~"; };
+      const order = [...groups.keys()].sort((x, y) => key(x).localeCompare(key(y), "de"));
+      return order.map(cid => {
+        const list = groups.get(cid);
+        return `<div class="group-h"><span>${esc(displayName(n[cid]))}</span>` +
+          `<span>${list.length} · ${fmtEur(UI.sum(list, "price", 2))}</span></div>` +
+          `<div class="card">${list.map(r => `<div class="item" data-id="${r.id}"><div class="main">
+            <div class="t">${esc(r.description)}</div>
+            <div class="s">${fmtDate(r.cost_date)} · Menge ${HW.fmtNum(r.quantity)}</div></div>
+            <div class="r"><b>${fmtEur(r.price)}</b></div></div>`).join("")}</div>`;
+      }).join("") + `<div class="card" style="margin-top:12px"><div class="sum"><span>Summe gesamt</span>` +
+        `<span>${fmtEur(UI.sum(rows, "price", 2))}</span></div></div>`;
     },
     view_sales(st) {
       const n = UI.names(), rows = st.sales(UI.pid), types = st.periodCustomerTypes(UI.pid);
@@ -521,7 +543,7 @@
         <div class="btns"><button class="btn edit" id="sRelease">Bearbeitung beenden (Sperre freigeben)</button></div>
         <div class="hint">Danach kann die Windows-App die Datenbank ohne Rückfrage bearbeiten.</div>
         <div class="btns"><button class="btn del" id="sLogout">Abmelden</button><button class="btn sec" id="sClose">Schließen</button></div>
-        <div class="hint">Holzwirtschaft iPhone 1.0.0</div>`);
+        <div class="hint">Holzwirtschaft iPhone 1.0.1</div>`);
       $("sClose").onclick = UI.closeSheet;
       $("sLoad").onclick = async () => { ls.set("dbPath", $("sPath").value.trim().replace(/^\/+/, "")); UI.closeSheet(); await Cloud.releaseLock().catch(() => {}); UI.connect(); };
       $("sRelease").onclick = async () => {
