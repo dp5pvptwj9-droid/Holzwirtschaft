@@ -5,5 +5,5 @@ window.HW_CONFIG = {
   // "consumers" = privates Microsoft-Konto (OneDrive privat), "common" = auch Firmen-/Schulkonten
   authority: "consumers",
   // Vorschlag für den Pfad der Datenbank im OneDrive (relativ zum OneDrive-Hauptordner)
-  defaultDbPath: "Dokumente/BrennholzCrew Walbeck/Holzwirtschaft DB"
+  defaultDbPath: "Dokumente/BrennholzCrew Walbeck/Holzwirtschaft DB/holzwirtschaft.db"
 };
