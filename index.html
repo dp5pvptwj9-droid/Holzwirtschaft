@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Holzwirtschaft">
+<meta name="theme-color" content="#5b3a1e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Holzwirtschaft</title>
+<style>
+  :root { --brown:#5b3a1e; --bg:#f4efe6; --card:#fff; --line:#e3dacb; --text:#2b2118; --muted:#7a6a58;
+          --green:#2e7d32; --orange:#e07b00; --red:#c62828; --blue:#1565c0; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--text);
+              font:16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  header { position:sticky; top:0; z-index:5; background:var(--brown); color:#fff;
+           padding:calc(env(safe-area-inset-top) + 8px) 12px 10px; }
+  header .row { display:flex; align-items:center; gap:8px; }
+  header h1 { font-size:18px; margin:0; flex:1; }
+  header select { flex:1; font-size:16px; padding:8px; border-radius:10px; border:0; min-width:0; }
+  #sync { font-size:12px; opacity:.9; margin-top:6px; }
+  .iconbtn { background:rgba(255,255,255,.15); color:#fff; border:0; border-radius:10px; padding:8px 10px; font-size:15px; }
+  main { padding:10px 10px calc(env(safe-area-inset-bottom) + 84px); }
+  .banner { border-radius:12px; padding:10px 12px; margin-bottom:10px; font-size:14px; }
+  .banner.info { background:#e8f0fb; color:#0d3c78; } .banner.warn { background:#fff3e0; color:#7a4300; }
+  .banner.err { background:#fdecea; color:#8a1c1c; } .banner.ok { background:#e8f5e9; color:#1b5e20; }
+  .card { background:var(--card); border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.06); overflow:hidden; }
+  .item { display:flex; gap:10px; padding:12px; border-bottom:1px solid var(--line); align-items:center; }
+  .item:last-child { border-bottom:0; } .item .main { flex:1; min-width:0; }
+  .item .t { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item .s { color:var(--muted); font-size:13px; } .item .r { text-align:right; white-space:nowrap; }
+  .tag { display:inline-block; font-size:11px; padding:2px 6px; border-radius:6px; background:#efe7da; color:var(--brown); }
+  .tag.ext { background:#e3f2fd; color:#0d47a1; }
+  .sum { display:flex; justify-content:space-between; padding:10px 12px; font-weight:600; background:#faf6ef; }
+  .empty { padding:24px; text-align:center; color:var(--muted); }
+  nav { position:fixed; bottom:0; left:0; right:0; z-index:5; display:flex; background:#fff; border-top:1px solid var(--line);
+        padding-bottom:env(safe-area-inset-bottom); }
+  nav button { flex:1; border:0; background:none; padding:8px 2px 6px; font-size:11px; color:var(--muted); }
+  nav button span { display:block; font-size:20px; } nav button.active { color:var(--brown); font-weight:700; }
+  .fab { position:fixed; right:16px; bottom:calc(env(safe-area-inset-bottom) + 72px); z-index:6; width:56px; height:56px;
+         border-radius:28px; border:0; background:var(--green); color:#fff; font-size:30px; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  .sheet-bg { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:10; display:none; align-items:flex-end; }
+  .sheet-bg.open { display:flex; }
+  .sheet { background:var(--bg); width:100%; max-height:92%; overflow:auto; border-radius:16px 16px 0 0;
+           padding:14px 14px calc(env(safe-area-inset-bottom) + 14px); }
+  .sheet h2 { margin:0 0 10px; font-size:18px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 2px 4px; }
+  input, select.f { width:100%; font-size:16px; padding:11px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--text); }
+  input[readonly] { background:#f1ece3; }
+  .btns { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .btn { flex:1; border:0; border-radius:12px; padding:13px; font-size:16px; font-weight:600; color:#fff; background:var(--green); }
+  .btn.sec { background:#d9cfbf; color:var(--text); } .btn.del { background:var(--red); } .btn.edit { background:var(--orange); }
+  .btn.blue { background:var(--blue); } .btn:disabled { opacity:.5; }
+  .hint { font-size:13px; color:var(--muted); margin-top:6px; }
+  #start { padding:24px 18px; text-align:center; } #start img { width:140px; border-radius:24px; }
+  #toast { position:fixed; left:12px; right:12px; bottom:calc(env(safe-area-inset-bottom) + 140px); z-index:20; display:none;
+           background:#333; color:#fff; padding:12px; border-radius:12px; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <div class="row"><h1>Holzwirtschaft</h1>
+    <button class="iconbtn" id="btnReload" title="Neu laden">⟳</button>
+    <button class="iconbtn" id="btnMenu" title="Einstellungen">⚙︎</button></div>
+  <div class="row" style="margin-top:8px"><select id="period"></select></div>
+  <div id="sync">Nicht verbunden</div>
+</header>
+<main id="main"></main>
+<button class="fab" id="fab" style="display:none">+</button>
+<nav id="nav">
+  <button data-tab="orders"><span>📝</span>Bestellungen</button>
+  <button data-tab="purchases"><span>🪵</span>Einkauf</button>
+  <button data-tab="costs"><span>⛽</span>Kosten</button>
+  <button data-tab="sales"><span>🚚</span>Verkäufe</button>
+  <button data-tab="customers"><span>👥</span>Kunden</button>
+</nav>
+<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.js"></script>
+<script src="store.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
